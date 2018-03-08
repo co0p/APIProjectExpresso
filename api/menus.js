@@ -11,7 +11,7 @@ const menuItemsRouter = require('./menu-items.js')
 
 // ----- Routing utilities -----
 
-app.use('/:menuId/menu-items', menuItemsRouter);
+menusRouter.use('/:menuId/menu-items', menuItemsRouter);
 
 
 
