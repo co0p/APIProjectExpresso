@@ -35,9 +35,8 @@ employeesRouter.use('/:employeeId/timesheets', timesheetsRouter);
 // ----- Start Routing -----
 
 employeesRouter.get('/', (req, res, next) =>{
-  const sql = "SELECT * FROM Employee WHERE is_current_employee = 1";
 
-  db.all(sql, (err, employees) =>{
+  db.all("SELECT * FROM Employee WHERE is_current_employee = 1", (err, employees) =>{
     if (err) {
       next(err);
     }
@@ -116,7 +115,11 @@ employeesRouter.put('/:employeeId', (req, res, next) =>{
 });
 
 employeesRouter.delete('/:employeeId', (req, res, next) =>{
-  
+  db.run(`UPDATE Employee SET is_current_employee = 0 WHERE id = ${req.params.employeeId}`, function(err){
+    db.get(`SELECT * FROM Employee WHERE id = ${req.params.employeeId}`, (err, employee) =>{
+      res.status(200).json({employee: employee});
+    });
+  });
 });
 
 
