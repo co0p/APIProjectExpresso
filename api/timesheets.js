@@ -86,7 +86,8 @@ timesheetsRouter.put('/:timesheetId', validateInput, (req, res, next) =>{
                         date = $date
                         WHERE id = ${req.params.timesheetId}`;
 
-  const values = {$hours: req.hours,
+  const values = {
+                  $hours: req.hours,
                   $rate: req.rate,
                   $date: req.date,
                   };

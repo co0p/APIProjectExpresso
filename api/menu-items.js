@@ -89,7 +89,8 @@ menuItemsRouter.put('/:menuItemId', valiinventoryInput, (req, res, next) =>{
                         price = $price
                         WHERE id = ${req.params.menuItemId}`;
 
-  const values = {$name: req.name,
+  const values = {
+                  $name: req.name,
                   $description: req.description,
                   $inventory: req.inventory,
                   $price: req.price
