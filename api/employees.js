@@ -11,8 +11,6 @@ const timesheetsRouter = require('./timesheets.js');
 
 // ----- Routing utilities -----
 
-
-
 employeesRouter.param('employeeId', (req, res, next, employeeId) =>{
 
   const sql = `SELECT * FROM Employee WHERE id = ${employeeId}`;
@@ -27,8 +25,26 @@ employeesRouter.param('employeeId', (req, res, next, employeeId) =>{
       res.sendStatus(404);
     }
   });
-
 });
+
+//This function checks if the input for post and put are valid.
+const validateInput = (req, res, next) =>{
+
+  const name = req.body.employee.name,
+        pos = req.body.employee.position,
+        wage = req.body.employee.wage,
+        employed = req.body.employee.isCurrentlyEmployed === 0 ? 0 : 1;
+
+        if (!name || !pos || !wage || !employed) {
+          return res.sendStatus(400);
+        }
+
+    req.name = name;
+    req.pos = pos;
+    req.wage = wage;
+    req.employed = employed;
+    next();
+};
 
 employeesRouter.use('/:employeeId/timesheets', timesheetsRouter);
 
@@ -45,24 +61,15 @@ employeesRouter.get('/', (req, res, next) =>{
   });
 });
 
-employeesRouter.post('/', (req, res, next) =>{
+employeesRouter.post('/', validateInput, (req, res, next) =>{
 
-  const name = req.body.employee.name,
-        pos = req.body.employee.position,
-        wage = req.body.employee.wage,
-        employed = req.body.employee.isCurrentlyEmployed === 0 ? 0 : 1;
-
-        if (!name || !pos || !wage || !employed) {
-          return res.sendStatus(400);
-        }
-
-  const sql = `INSERT INTO Employee (name, position, wage, is_current_employee) VALUES ($name, $pos, $wage, $empl)`;
+  const sql = `INSERT INTO Employee (name, position, wage, is_current_employee) VALUES ($name, $pos, $wage, $employed)`;
 
   const values = {
-                  $name: name,
-                  $pos: pos,
-                  $wage: wage,
-                  $empl: employed
+                  $name: req.name,
+                  $pos: req.pos,
+                  $wage: req.wage,
+                  $employed: req.employed
                 };
 
   db.run(sql, values, function(err){
@@ -81,25 +88,19 @@ employeesRouter.get('/:employeeId', (req, res, next) =>{
   res.status(200).json({employee: req.employee});
 });
 
-employeesRouter.put('/:employeeId', (req, res, next) =>{
-
-  const name = req.body.employee.name,
-        pos = req.body.employee.position,
-        wage = req.body.employee.wage;
-
-  if (!name || !pos || !wage) {
-    return res.sendStatus(400);
-  }
+employeesRouter.put('/:employeeId', validateInput, (req, res, next) =>{
 
   const sql = `UPDATE Employee SET
                         name = $name,
                         position = $pos,
-                        wage = $wage
+                        wage = $wage,
+                        is_current_employee = $employed
                         WHERE id = $id`;
 
-  const values = {$name: name,
-                  $pos: pos,
-                  $wage: wage,
+  const values = {$name: req.name,
+                  $pos: req.pos,
+                  $wage: req.wage,
+                  $employed: req.employed,
                   $id: req.params.employeeId
                   };
 
