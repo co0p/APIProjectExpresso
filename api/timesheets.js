@@ -26,6 +26,24 @@ timesheetsRouter.param('timesheetId', (req, res, next, timesheetId) =>{
   });
 });
 
+//This function checks if the input for post and put are valid.
+const validateInput = (req, res, next) =>{
+
+  const hours = req.body.timesheet.hours,
+        rate = req.body.timesheet.rate,
+        date = req.body.timesheet.date
+
+        if (!hours || !rate || !date) {
+          return res.sendStatus(400);
+        }
+
+        req.hours = hours;
+        req.rate = rate;
+        req.date = date;
+        next();
+
+};
+
 // ----- Start Routing -----
 
 timesheetsRouter.get('/', (req, res, next) =>{
@@ -39,24 +57,14 @@ timesheetsRouter.get('/', (req, res, next) =>{
   });
 });
 
-timesheetsRouter.post('/', (req, res, next) =>{
+timesheetsRouter.post('/', validateInput, (req, res, next) =>{
 
-  const name = req.body.timesheet.name,
-        pos = req.body.timesheet.position,
-        wage = req.body.timesheet.wage,
-        employed = req.body.timesheet.isCurrentlyEmployed === 0 ? 0 : 1;
-
-        if (!name || !pos || !wage || !employed) {
-          return res.sendStatus(400);
-        }
-
-  const sql = `INSERT INTO Timesheet (name, position, wage, is_current_timesheet) VALUES ($name, $pos, $wage, $empl)`;
+  const sql = `INSERT INTO Timesheet (hours, rate, date, employee_id) VALUES ($hours, $rate, $date, ${req.params.employeeId})`;
 
   const values = {
-                  $name: name,
-                  $pos: pos,
-                  $wage: wage,
-                  $empl: employed
+                  $hours: req.hours,
+                  $rate: req.rate,
+                  $date: req.date,
                 };
 
   db.run(sql, values, function(err){
@@ -70,26 +78,17 @@ timesheetsRouter.post('/', (req, res, next) =>{
   });
 });
 
-timesheetsRouter.put('/:timesheetId', (req, res, next) =>{
-
-  const name = req.body.timesheet.name,
-        pos = req.body.timesheet.position,
-        wage = req.body.timesheet.wage;
-
-  if (!name || !pos || !wage) {
-    return res.sendStatus(400);
-  }
+timesheetsRouter.put('/:timesheetId', validateInput, (req, res, next) =>{
 
   const sql = `UPDATE Timesheet SET
-                        name = $name,
-                        position = $pos,
-                        wage = $wage
-                        WHERE id = $id`;
+                        hours = $hours,
+                        rate = $rate,
+                        date = $date
+                        WHERE id = ${req.params.timesheetId}`;
 
-  const values = {$name: name,
-                  $pos: pos,
-                  $wage: wage,
-                  $id: req.params.timesheetId
+  const values = {$hours: req.hours,
+                  $rate: req.rate,
+                  $date: req.date,
                   };
 
   db.run(sql, values, err =>{
@@ -104,10 +103,11 @@ timesheetsRouter.put('/:timesheetId', (req, res, next) =>{
 });
 
 timesheetsRouter.delete('/:timesheetId', (req, res, next) =>{
-  db.run(`UPDATE Timesheet SET is_current_timesheet = 0 WHERE id = ${req.params.timesheetId}`, function(err){
-    db.get(`SELECT * FROM Timesheet WHERE id = ${req.params.timesheetId}`, (err, timesheet) =>{
-      res.status(200).json({timesheet: timesheet});
-    });
+  db.run(`DELETE FROM Timesheet WHERE id = ${req.params.timesheetId}`, function(err){
+    if (err) {
+      next(err);
+    }
+    res.sendStatus(204);
   });
 });
 

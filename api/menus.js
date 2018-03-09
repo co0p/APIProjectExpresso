@@ -25,8 +25,24 @@ menusRouter.param('menuId', (req, res, next, menuId) =>{
       res.sendStatus(404);
     }
   });
-
 });
+
+//This function checks if the input for post and put are valid.
+const validateInput = (req, res, next) =>{
+
+  const title = req.body.menu.title;
+
+    if (!title) {
+      return res.sendStatus(400);
+    }
+
+    req.title = title;
+    next();
+};
+
+
+
+
 
 menusRouter.use('/:menuId/menu-items', menuItemsRouter);
 
@@ -43,29 +59,9 @@ menusRouter.get('/', (req, res, next) =>{
   });
 });
 
-menusRouter.post('/', (req, res, next) =>{
+menusRouter.post('/', validateInput, (req, res, next) =>{
 
-  console.log(req.body.menu);
-
-  const name = req.body.menu.name,
-        pos = req.body.menu.position,
-        wage = req.body.menu.wage,
-        employed = req.body.menu.isCurrentlyEmployed === 0 ? 0 : 1;
-
-        if (!name || !pos || !wage || !employed) {
-          return res.sendStatus(400);
-        }
-
-  const sql = `INSERT INTO Menu (name, position, wage, is_current_menu) VALUES ($name, $pos, $wage, $empl)`;
-
-  const values = {
-                  $name: name,
-                  $pos: pos,
-                  $wage: wage,
-                  $empl: employed
-                };
-
-  db.run(sql, values, function(err){
+  db.run(`INSERT INTO Menu (title) VALUES ($title)`, {$title: req.title}, function(err){
     if (err) {
       return next(err);
     }
@@ -81,29 +77,14 @@ menusRouter.get('/:menuId', (req, res, next) =>{
   res.status(200).json({menu: req.menu});
 });
 
-menusRouter.put('/:menuId', (req, res, next) =>{
+menusRouter.put('/:menuId', validateInput, (req, res, next) =>{
 
-  const name = req.body.menu.name,
-        pos = req.body.menu.position,
-        wage = req.body.menu.wage;
+  const values = {
+                    $title: req.title,
+                    $id: req.params.menuId
+  };
 
-  if (!name || !pos || !wage) {
-    return res.sendStatus(400);
-  }
-
-  const sql = `UPDATE Menu SET
-                        name = $name,
-                        position = $pos,
-                        wage = $wage
-                        WHERE id = $id`;
-
-  const values = {$name: name,
-                  $pos: pos,
-                  $wage: wage,
-                  $id: req.params.menuId
-                  };
-
-  db.run(sql, values, err =>{
+  db.run(`UPDATE Menu SET title = $title WHERE id = $id`, values,  err =>{
     if (err) {
       return next(err);
     }
@@ -115,9 +96,21 @@ menusRouter.put('/:menuId', (req, res, next) =>{
 });
 
 menusRouter.delete('/:menuId', (req, res, next) =>{
-  db.run(`UPDATE Menu SET is_current_menu = 0 WHERE id = ${req.params.menuId}`, function(err){
-    db.get(`SELECT * FROM Menu WHERE id = ${req.params.menuId}`, (err, menu) =>{
-      res.status(200).json({menu: menu});
+  db.get(`SELECT * FROM MenuItem WHERE menu_id = ${req.params.menuId}`, (err, menuItem) =>{
+    if (err) {
+      return next(err);
+    }
+
+    if (menuItem) {
+      return res.sendStatus(400);
+    }
+
+    db.run(`DELETE FROM Menu WHERE id = ${req.params.menuId}`, err =>{
+      if (err) {
+        return next(err);
+      }
+
+      res.sendStatus(204);
     });
   });
 });
