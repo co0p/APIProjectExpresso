@@ -48,6 +48,9 @@ const validateInput = (req, res, next) =>{
 
 employeesRouter.use('/:employeeId/timesheets', timesheetsRouter);
 
+
+
+
 // ----- Start Routing -----
 
 employeesRouter.get('/', (req, res, next) =>{
@@ -57,7 +60,7 @@ employeesRouter.get('/', (req, res, next) =>{
       next(err);
     }
 
-    res.status(200).json({employees: employees})
+    res.status(200).json({employees})
   });
 });
 
@@ -78,7 +81,7 @@ employeesRouter.post('/', validateInput, (req, res, next) =>{
     }
 
     db.get(`SELECT * FROM Employee WHERE id = ${this.lastID}`, (err, employee) =>{
-      res.status(201).json({employee: employee});
+      res.status(201).json({employee});
     });
   });
 });
@@ -110,7 +113,7 @@ employeesRouter.put('/:employeeId', validateInput, (req, res, next) =>{
     }
 
     db.get(`SELECT * FROM Employee WHERE id = ${req.params.employeeId}`, (err, employee) =>{
-      res.status(200).json({employee: employee});
+      res.status(200).json({employee});
     });
   });
 });
@@ -118,7 +121,7 @@ employeesRouter.put('/:employeeId', validateInput, (req, res, next) =>{
 employeesRouter.delete('/:employeeId', (req, res, next) =>{
   db.run(`UPDATE Employee SET is_current_employee = 0 WHERE id = ${req.params.employeeId}`, function(err){
     db.get(`SELECT * FROM Employee WHERE id = ${req.params.employeeId}`, (err, employee) =>{
-      res.status(200).json({employee: employee});
+      res.status(200).json({employee});
     });
   });
 });

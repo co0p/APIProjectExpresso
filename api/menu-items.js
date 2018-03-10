@@ -45,6 +45,10 @@ const valiinventoryInput = (req, res, next) =>{
 
 };
 
+
+
+
+
 // ----- Start Routing -----
 
 menuItemsRouter.get('/', (req, res, next) =>{
@@ -54,7 +58,7 @@ menuItemsRouter.get('/', (req, res, next) =>{
       next(err);
     }
 
-    res.status(200).json({menuItems: menuItems})
+    res.status(200).json({menuItems})
   });
 });
 
@@ -75,7 +79,7 @@ menuItemsRouter.post('/', valiinventoryInput, (req, res, next) =>{
     }
 
     db.get(`SELECT * FROM MenuItem WHERE id = ${this.lastID}`, (err, menuItem) =>{
-      res.status(201).json({menuItem: menuItem});
+      res.status(201).json({menuItem});
     });
   });
 });
@@ -102,7 +106,7 @@ menuItemsRouter.put('/:menuItemId', valiinventoryInput, (req, res, next) =>{
     }
 
     db.get(`SELECT * FROM MenuItem WHERE id = ${req.params.menuItemId}`, (err, menuItem) =>{
-      res.status(200).json({menuItem: menuItem});
+      res.status(200).json({menuItem});
     });
   });
 });

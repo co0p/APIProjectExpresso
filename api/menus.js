@@ -40,11 +40,9 @@ const validateInput = (req, res, next) =>{
     next();
 };
 
-
-
-
-
 menusRouter.use('/:menuId/menu-items', menuItemsRouter);
+
+
 
 // ----- Start Routing -----
 
@@ -55,7 +53,7 @@ menusRouter.get('/', (req, res, next) =>{
       next(err);
     }
 
-    res.status(200).json({menus: menus})
+    res.status(200).json({menus})
   });
 });
 
@@ -67,7 +65,7 @@ menusRouter.post('/', validateInput, (req, res, next) =>{
     }
 
     db.get(`SELECT * FROM Menu WHERE id = ${this.lastID}`, (err, menu) =>{
-      res.status(201).json({menu: menu});
+      res.status(201).json({menu});
     });
   });
 });
@@ -90,7 +88,7 @@ menusRouter.put('/:menuId', validateInput, (req, res, next) =>{
     }
 
     db.get(`SELECT * FROM Menu WHERE id = ${req.params.menuId}`, (err, menu) =>{
-      res.status(200).json({menu: menu});
+      res.status(200).json({menu});
     });
   });
 });

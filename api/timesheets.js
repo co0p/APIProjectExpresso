@@ -44,6 +44,9 @@ const validateInput = (req, res, next) =>{
 
 };
 
+
+
+
 // ----- Start Routing -----
 
 timesheetsRouter.get('/', (req, res, next) =>{
@@ -53,7 +56,7 @@ timesheetsRouter.get('/', (req, res, next) =>{
       next(err);
     }
 
-    res.status(200).json({timesheets: timesheets})
+    res.status(200).json({timesheets})
   });
 });
 
@@ -73,7 +76,7 @@ timesheetsRouter.post('/', validateInput, (req, res, next) =>{
     }
 
     db.get(`SELECT * FROM Timesheet WHERE id = ${this.lastID}`, (err, timesheet) =>{
-      res.status(201).json({timesheet: timesheet});
+      res.status(201).json({timesheet});
     });
   });
 });
@@ -98,7 +101,7 @@ timesheetsRouter.put('/:timesheetId', validateInput, (req, res, next) =>{
     }
 
     db.get(`SELECT * FROM Timesheet WHERE id = ${req.params.timesheetId}`, (err, timesheet) =>{
-      res.status(200).json({timesheet: timesheet});
+      res.status(200).json({timesheet});
     });
   });
 });
